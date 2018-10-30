@@ -41,22 +41,22 @@ bool checkvar(string a) //check the variable in the data segment
 	}
 	return false;
 }
-void forexchg(string test,string line,string type)
+void forxchg(string test,string line,string type)
 {
-	int ax=a.find("ax"); //for register direct
-	int bx=a.find("bx");
-	int cx=a.find("cx");
-	int dx=a.find("dx");
-	int al=a.find("al");
-	int ah=a.find("ah");
-	int bl=a.find("bl");
-	int bh=a.find("bh");
-	int cl=a.find("cl");
-	int ch=a.find("ch");
-	int dl=a.find("dl");
-	int dh=a.find("dh");
-	int si=a.find("si");
-	int di=a.find("di");
+	int ax=line.find("ax"); //for register direct
+	int bx=line.find("bx");
+	int cx=line.find("cx");
+	int dx=line.find("dx");
+	int al=line.find("al");
+	int ah=line.find("ah");
+	int bl=line.find("bl");
+	int bh=line.find("bh");
+	int cl=line.find("cl");
+	int ch=line.find("ch");
+	int dl=line.find("dl");
+	int dh=line.find("dh");
+	int si=line.find("si");
+	int di=line.find("di");
 
 	if (type=="8")
 	{
@@ -66,7 +66,7 @@ void forexchg(string test,string line,string type)
 		}
 		else
 		{
-			cout<<"error:size doesnt match";exit(0):
+			cout<<"error:size doesnt match";exit(0);
 		}
 	}
 	else
@@ -564,7 +564,8 @@ void codesegment(string a)
 	else if(xchg>=0)
 	{
 		if(al>0 || ah>0 ||bl>0 || bh>0 || cl >0 || ch>0 ||dl>0 ||dh>0)
-			{	if(al>0)
+			{	string test;  
+        if(al>0)
 				{	if(al+2>=a.length())
 					{
 						test=a.substr(xchg+5,al);
@@ -668,7 +669,8 @@ void codesegment(string a)
 				forxchg(test,a,"8");
 			}
 		else if(ax>0 || bx>0 || cx>0 || dx>0 || si>0 || di >0)
-			{   if(ax>0)
+			{  string test;
+         if(ax>0)
 				{if(ax+2>=a.length())
 					{
 						test=a.substr(xchg+5,ax);
@@ -744,7 +746,7 @@ void codesegment(string a)
 					{
 					cout<<"error";exit(0);}
 				}
-				forexchg(test,a,"16");
+				forxchg(test,a,"16");
 			}
 		else
 		{
@@ -971,6 +973,7 @@ void codesegment(string a)
 int segment(string p,int lc,int k,int j)
  { 
    int pos0,pos;
+   regex number1("[0-9]");
 		string a=s[j].line,test;
 		pos0=a.find("ends");
 		pos=a.find("db");
@@ -1004,7 +1007,7 @@ int segment(string p,int lc,int k,int j)
 			if(pos>=0 )
 			{  
 				string test=a.substr(pos+2,a.length()),test1=a.substr(0,pos);
-				if((regex_match(test,hex) || regex_match(test,dec) || dup>0 || comma>0 || q>0) && (regex_match(test1,vardec)||regex_match(test1,vardec1))){   cout<<"a";
+				if((regex_match(test,hex) || regex_match(test,dec) || dup>0 || comma>0 || q>0) && (regex_match(test1,vardec)||regex_match(test1,vardec1))){   
 					pos=a.find("db");
 					singledeclare(a.substr(0,pos));
 					sym[::k].var=a.substr(0,pos);
@@ -1013,16 +1016,41 @@ int segment(string p,int lc,int k,int j)
 					sym[::k].segment=p;
 					sym[::k].dtype="db";
 					sym[::k].type="var";
-					for(int x=pos;x<a.length();x++) //for array declaration
+					for(int x=pos;x<a.length();x++)
 						{
 							if(a[pos]==',')
 							{
 						count++;}
 					}
-					if(dup>0)   //for duplicate 
+          
+					if(dup>0)
 					{	char g[10];
+            int brack=a.find(")");
+						string gh=a.substr(dup+4,brack-1);
+            regex hex1("[0-9]+[h]\\)");
+            regex dec1("[0-9]+\\)");
+            int ques=a.find('?');
+						if(regex_match(gh,hex1) ||regex_match(gh,dec1) || ques>dup+3)
+						{
+							int coo=0;
+							for(int l=pos+2;l<dup;l++)
+							{  gh=a[l];
+							  if(regex_match(gh,number1))
+							{ char gh1=a[l];
+								g[coo++]=gh1;
+								}
+							}
+						
 						int f=0;
-						dup =dup+3;
+						f=atoi(g);
+						count*=f;
+						}
+						else
+						{cout<<"error:invalid declaration";}
+					}
+
+
+						/*dup =dup+3;
 						g[f]=a[++dup];
 						while(a[++dup]!=')')
 						{
@@ -1032,8 +1060,7 @@ int segment(string p,int lc,int k,int j)
 						count*=f;}
 						else{
 							cout<<"error";exit(0);
-						}
-					}
+						}*/
 					::lc=::lc+count;				
 					return segment(p,::lc,++::k,++j);
 				}
@@ -1043,7 +1070,9 @@ int segment(string p,int lc,int k,int j)
 		}
 		 else if(pos1>=0)
 		 {    	pos=a.find("dw");
-				if((regex_match(a.substr(pos+2,a.length()),hex) || regex_match(a.substr(pos+2,a.length()),dec) || dup>0 || comma>0 || q>0 ) && (regex_match(a.substr(0,pos1),vardec) || (regex_match(a.substr(0,pos2),vardec1)))){
+        string test=a.substr(pos+2,a.length());
+        string test1=a.substr(0,pos);
+				if((regex_match(test,hex) || regex_match(test,dec) || dup>0 || comma>0 || q>0 ) && (regex_match(test1,vardec) || regex_match(test1,vardec1))){
 					singledeclare(a.substr(0,pos));
 					sym[::k].var=a.substr(0,pos);
 					int count=2;
@@ -1057,22 +1086,30 @@ int segment(string p,int lc,int k,int j)
 							{
 								count+=2;;}
 					}
-					pos=a.find("dup");
-				    if(pos>=0)
-					{
-						char g[10];
+					if(dup>0)
+					{	char g[10];
+            int brack=a.find(")");
+						string gh=a.substr(dup+4,brack-1);
+            regex hex1("[0-9]+[h]\\)");
+            regex dec1("[0-9]+\\)");
+            int ques=a.find('?');
+						if(regex_match(gh,hex1) ||regex_match(gh,dec1) || ques>dup+3)
+						{
+							int coo=0;
+							for(int l=pos+2;l<dup;l++)
+							{  gh=a[l];
+							  if(regex_match(gh,number1))
+							{ char gh1=a[l];
+								g[coo++]=gh1;
+								}
+							}
+						
 						int f=0;
-						pos=pos+3;
-						g[f]=a[++pos];
-						cout<<g[f]<<endl;
-							while(a[++pos]!=')')
-							{
-								g[++f]=a[pos];}
-						if(q>pos || regex_match(a.substr(pos,a.length()),hex) || regex_match(a.substr(pos,a.length()),hex))
-						{f=atoi(g);	
-						count*=f;}
-						else{
-						cout<<"error";exit(0);}
+						f=atoi(g);
+						count*=f;
+						}
+						else
+						{cout<<"error:invalid declaration";}
 					}
 					::lc=::lc+count;
 					return segment(p,::lc,++::k,++j);
@@ -1085,7 +1122,7 @@ int segment(string p,int lc,int k,int j)
 			}
 		 else if(pos2>=0 )
 		 { 	pos=a.find("dd");	
-			if((regex_match(a.substr(pos+2,a.length()),hex) || regex_match(a.substr(pos+2,a.length()),dec) || dup>0 || comma>0 ) && (regex_match(a.substr(0,pos2),vardec) ||(regex_match(a.substr(0,pos2),vardec1))))
+			if((regex_match(a.substr(pos+2,a.length()),hex) || regex_match(a.substr(pos+2,a.length()),dec) || dup>0 || comma>0 ) && (regex_match(a.substr(0,pos),vardec) ||regex_match(a.substr(0,pos),vardec1)))
 				{
 					singledeclare(a.substr(0,pos)); 
 					sym[::k].var=a.substr(0,pos);
@@ -1100,23 +1137,30 @@ int segment(string p,int lc,int k,int j)
 						{
 						count+=4;}
 					}
-					pos=a.find("dup");
-					if(pos>=0)
-					{ 	
-						char g[10];
-						int f=0;
-						pos=pos+3;
-						g[f]=a[++pos];
-						cout<<g[f]<<endl;
-							while(a[++pos]!=')')
-							{
-								g[++f]=a[pos];}
+					if(dup>0)
+					{	char g[10];
+            int brack=a.find(")");
+						string gh=a.substr(dup+4,brack-1);
+            regex hex1("[0-9]+[h]\\)");
+            regex dec1("[0-9]+\\)");
+            int ques=a.find('?');
+						if(regex_match(gh,hex1) ||regex_match(gh,dec1) || ques>dup+3)
+						{
+							int coo=0;
+							for(int l=pos+2;l<dup;l++)
+							{  gh=a[l];
+							  if(regex_match(gh,number1))
+							{ char gh1=a[l];
+								g[coo++]=gh1;
+								}
+							}
 						
-						if(q>pos || regex_match(a.substr(pos,a.length()),hex) || regex_match(a.substr(pos,a.length()),hex))
-						{f=atoi(g);
-						count*=f;}
-						else{
-						cout<<"error";exit(0);}
+						int f=0;
+						f=atoi(g);
+						count*=f;
+						}
+						else
+						{cout<<"error:invalid declaration";}
 					}
 						
 					::lc=::lc+count;
@@ -1159,7 +1203,7 @@ int segment(string p,int lc,int k,int j)
 		}
 		else
 		{
-		cout<<"error: not a valid instruction";
+		cout<<"error";
 		exit(0);
 		}	
  }
@@ -1186,7 +1230,7 @@ int main()
 				    sym[::k].lc=lc;
 			    	j=segment(a.substr(0,pos),::lc,++::k,++j);
 			    	j++;
-			}
+       }
 			else
 			{
 			cout<<"error";}
